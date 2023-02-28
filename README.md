@@ -1,41 +1,101 @@
-# Balanced-Forest
-#!/bin/python3
+#include <cstdio>
+#include <iostream>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+#include <vector>
+#include <map>
+#include <set>
+#include <string>
+#include <cstdlib>
+#include <ctime>
+#include <deque>
+#include <unordered_set>
+using namespace std;
 
-import math
-import os
-import random
-import re
-import sys
+int q;
+map <long long, int> Map1, Map2;
+long long ctot;
+int c[110000];
+vector <int> ve[110000];
+long long ans;
+int n;
+long long sum[1100000];
 
-#
-# Complete the 'balancedForest' function below.
-#
-# The function is expected to return an INTEGER.
-# The function accepts following parameters:
-#  1. INTEGER_ARRAY c
-#  2. 2D_INTEGER_ARRAY edges
-#
+void dfs1(int x, int f) {
+    sum[x] = c[x];
+    for (int i = 0; i < (int) ve[x].size(); i++)
+        if (ve[x][i] != f) {
+            dfs1(ve[x][i], x);
+            sum[x] += sum[ve[x][i]];
+        }
+    Map1[sum[x]] += 1;
+}
 
-def balancedForest(c, edges):
-    # Write your code here
+void test(long long x) {
+    long long y = ctot - 2 * x;
+    if (y > 0 && y <= x)
+        ans = min(ans, x - y);
+}
 
-if __name__ == '__main__':
-    fptr = open(os.environ['OUTPUT_PATH'], 'w')
+void dfs2(int x, int f) {
+    
 
-    q = int(input().strip())
+    
+    if (Map2[2 * sum[x]])
+        test(sum[x]);
+    if (Map2[ctot - sum[x]])
+        test(sum[x]);
+    if ((ctot - sum[x]) % 2 == 0 && Map2[ctot - (ctot - sum[x]) / 2])
+        test((ctot - sum[x]) / 2);
 
-    for q_itr in range(q):
-        n = int(input().strip())
+    Map2[sum[x]] += 1;
 
-        c = list(map(int, input().rstrip().split()))
+    if (Map1[sum[x]] > Map2[sum[x]])
+        test(sum[x]);
 
-        edges = []
+    if (ctot - 2 * sum[x] >= sum[x] && Map1[ctot - 2 * sum[x]] > Map2[ctot - 2 * sum[x]])
+        test(sum[x]);
 
-        for _ in range(n - 1):
-            edges.append(list(map(int, input().rstrip().split())))
+    if ((ctot - sum[x]) % 2 == 0 && (ctot - sum[x]) / 2 >= sum[x] && Map1[(ctot - sum[x]) / 2] > Map2[(ctot - sum[x]) / 2])
+        test((ctot - sum[x]) / 2);
 
-        result = balancedForest(c, edges)
+    if (sum[x] * 2 == ctot)
+        ans = min(ans, sum[x]);
+    
+    for (int i = 0; i < (int) ve[x].size(); i++)
+        if (ve[x][i] != f) {
+            dfs2(ve[x][i], x);
+        }
 
-        fptr.write(str(result) + '\n')
+    Map2[sum[x]] -= 1;
+}
 
-    fptr.close()
+int main() {
+    scanf("%d", &q);
+    while (q--) {
+        Map1.clear();
+        Map2.clear();
+        ans = 1e18;
+        scanf("%d", &n);
+        ctot = 0;
+        for (int i = 1; i <= n; i++) {
+            scanf("%d", &c[i]);
+            ctot += c[i];
+        }
+        for (int i = 1; i <= n; i++)
+            ve[i].clear();
+        for (int i = 1; i < n; i++) {
+            int x, y;
+            scanf("%d%d", &x, &y);
+            ve[x].push_back(y);
+            ve[y].push_back(x);
+        }
+        dfs1(1, 0);
+        dfs2(1, 0);
+        if (ans == 1e18)
+            printf("-1\n");
+        else
+            printf("%lld\n", ans);
+    }
+}
